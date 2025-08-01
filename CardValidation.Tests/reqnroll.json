@@ -1,0 +1,31 @@
+{
+  "bindingCulture": {
+    "name": "en-US"
+  },
+  "language": {
+    "feature": "en-US"
+  },
+  "stepAssemblies": [
+    {
+      "assembly": "CardValidation.Tests"
+    }
+  ],
+  "stepDefinitions": {
+    "searchIn": [
+      "StepDefinitions"
+    ]
+  },
+  "features": [
+    {
+      "source": "Features"
+    }
+  ],
+  "generator": {
+    "allowRowTests": true,
+    "allowDebugGeneratedFiles": true,
+    "generateAsyncTests": true
+  },
+  "runtime": {
+    "missingOrPendingStepsOutcome": "Error"
+  }
+} 
