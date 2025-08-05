@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Reqnroll;
-using Reqnroll.Assist;
 
 namespace CardValidation.Tests.Steps
 {

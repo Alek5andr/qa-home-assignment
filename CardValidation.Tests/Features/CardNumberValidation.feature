@@ -68,3 +68,6 @@ Feature: Card Number Validation
     When I send the validation request
     Then the response status code should be 400
     And the response should contain error message "Number is required"
+
+#dotnet test CardValidation.Tests --filter "CardNumberValidation"
+#dotnet run --project CardValidation.Web
