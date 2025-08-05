@@ -70,4 +70,6 @@ Feature: Card Number Validation
     And the response should contain error message "Number is required"
 
 #dotnet test CardValidation.Tests --filter "CardNumberValidation"
+#dotnet test CardValidation.Tests --filter "CardValidation.Tests.Features"
+#dotnet test CardValidation.Tests --filter "CardValidationServiceTests"
 #dotnet run --project CardValidation.Web

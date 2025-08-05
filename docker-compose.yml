@@ -1,0 +1,63 @@
+services:
+  # Основное приложение для интеграционных тестов
+  cardvalidation-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cardvalidation-api
+    ports:
+      - "7135:7135"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:7135
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    networks:
+      - test-network
+
+  # Контейнер для запуска тестов
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    container_name: cardvalidation-tests
+    volumes:
+      # Монтируем директории для получения результатов тестов
+      - ./test-results:/app/test-results
+      - ./coverage:/app/coverage
+      - ./coverage/html-report:/app/coverage/html-report
+    networks:
+      - test-network
+    environment:
+      - TEST_API_URL=https://cardvalidation-api:7135
+      - ASPNETCORE_ENVIRONMENT=Test
+    command: >
+      bash -c "
+        echo 'Ожидание готовности API...' &&
+        sleep 30 &&
+        echo 'Запуск тестов...' &&
+        /app/run-tests.sh
+      "
+
+  # Веб-сервер для просмотра HTML отчётов
+  report-viewer:
+    image: nginx:alpine
+    container_name: coverage-report-viewer
+    ports:
+      - "8080:80"
+    volumes:
+      - ./coverage/html-report:/usr/share/nginx/html:ro
+    depends_on:
+      - test-runner
+    networks:
+      - test-network
+    profiles:
+      - report-viewer
+
+networks:
+  test-network:
+    driver: bridge
+
+volumes:
+  test-results:
+  coverage-reports:

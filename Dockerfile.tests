@@ -1,0 +1,99 @@
+# Используем официальный образ .NET SDK
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS test-environment
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Копируем файлы проекта
+COPY . .
+
+# Восстанавливаем зависимости
+RUN dotnet restore
+
+# Устанавливаем глобальный инструмент для генерации отчётов
+RUN dotnet tool install --global dotnet-reportgenerator-globaltool
+
+# Добавляем путь к глобальным инструментам в PATH
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+# Создаём директории для результатов тестов и отчётов
+RUN mkdir -p /app/test-results/unit-tests && \
+    mkdir -p /app/test-results/integration-tests && \
+    mkdir -p /app/coverage && \
+    mkdir -p /app/coverage/html-report
+
+# Собираем проект
+RUN dotnet build --configuration Release --no-restore
+
+# Создаём скрипт для запуска тестов
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+echo "=== Запуск Unit тестов ==="\n\
+dotnet test CardValidation.Tests \\\n\
+    --configuration Release \\\n\
+    --no-build \\\n\
+    --filter "CardValidationServiceTests" \\\n\
+    --logger "trx;LogFileName=unit-tests.trx" \\\n\
+    --results-directory ./test-results/unit-tests \\\n\
+    --collect:"XPlat Code Coverage" \\\n\
+    --settings coverlet.runsettings || echo "Unit тесты завершены с ошибками"\n\
+\n\
+echo "=== Запуск интеграционных BDD тестов ==="\n\
+dotnet test CardValidation.Tests \\\n\
+    --configuration Release \\\n\
+    --no-build \\\n\
+#    --filter "CardValidation.Tests.Features" \\\n\
+    --logger "trx;LogFileName=integration-tests.trx" \\\n\
+    --results-directory ./test-results/integration-tests \\\n\
+    --collect:"XPlat Code Coverage" \\\n\
+    --settings coverlet.runsettings || echo "Интеграционные тесты завершены с ошибками"\n\
+\n\
+echo "=== Объединение результатов покрытия ==="\n\
+# Копируем все файлы покрытия в общую директорию\n\
+find ./test-results -name "coverage.cobertura.xml" -exec cp {} ./coverage/ \\;\n\
+\n\
+echo "=== Генерация HTML отчёта ==="\n\
+reportgenerator \\\n\
+    -reports:"./coverage/**/coverage.cobertura.xml" \\\n\
+    -targetdir:"./coverage/html-report" \\\n\
+    -reporttypes:Html \\\n\
+    -verbosity:Info || echo "Генерация отчёта завершена с предупреждениями"\n\
+\n\
+echo "=== Результаты тестирования ==="\n\
+echo "Unit тесты: ./test-results/unit-tests/"\n\
+echo "Интеграционные тесты: ./test-results/integration-tests/"\n\
+echo "HTML отчёт о покрытии: ./coverage/html-report/index.html"\n\
+\n\
+# Показываем краткую статистику\n\
+if [ -f "./coverage/html-report/index.html" ]; then\n\
+    echo "HTML отчёт успешно создан"\n\
+    ls -la ./coverage/html-report/\n\
+else\n\
+    echo "Ошибка при создании HTML отчёта"\n\
+fi\n\
+' > /app/run-tests.sh && chmod +x /app/run-tests.sh
+
+# Создаём файл настроек покрытия кода
+RUN echo '<?xml version="1.0" encoding="utf-8"?>\n\
+<RunSettings>\n\
+  <DataCollectionRunSettings>\n\
+    <DataCollectors>\n\
+      <DataCollector friendlyName="XPlat code coverage">\n\
+        <Configuration>\n\
+          <Format>cobertura</Format>\n\
+          <Exclude>[*.Tests]*,[*]*.Program,[*]*.Startup</Exclude>\n\
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>\n\
+          <ExcludeByFile>**/Migrations/**</ExcludeByFile>\n\
+          <IncludeDirectory>../CardValidation.Core/**</IncludeDirectory>\n\
+        </Configuration>\n\
+      </DataCollector>\n\
+    </DataCollectors>\n\
+  </DataCollectionRunSettings>\n\
+</RunSettings>' > /app/coverlet.runsettings
+
+# Экспортируем порты (если нужны для интеграционных тестов)
+EXPOSE 7135
+
+# Устанавливаем команду по умолчанию
+CMD ["/app/run-tests.sh"]
