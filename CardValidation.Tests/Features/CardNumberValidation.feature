@@ -4,7 +4,7 @@ Feature: Card Number Validation
   So that only valid card numbers are accepted
 
   Background:
-    Given the card validation service is available at "https://localhost:7135/CardValidation/card/credit/validate"
+    Given the card validation service is available at credit card validation url
 
   Scenario Outline: Valid card numbers should return correct payment system type
     Given I have a credit card with the following details:
@@ -68,8 +68,3 @@ Feature: Card Number Validation
     When I send the validation request
     Then the response status code should be 400
     And the response should contain error message "Number is required"
-
-#dotnet test CardValidation.Tests --filter "CardNumberValidation"
-#dotnet test CardValidation.Tests --filter "CardValidation.Tests.Features"
-#dotnet test CardValidation.Tests --filter "CardValidationServiceTests"
-#dotnet run --project CardValidation.Web

@@ -20,10 +20,11 @@ namespace CardValidation.Tests.Steps
             _httpClient = new HttpClient();
         }
 
-        [Given(@"the card validation service is available at ""(.*)""")]
-        public void GivenTheCardValidationServiceIsAvailableAt(string serviceUrl)
+        [Given(@"the card validation service is available at credit card validation url")]
+        public void GivenTheCardValidationServiceIsAvailableAt()
         {
-            _serviceUrl = serviceUrl;
+            var baseUrl = Environment.GetEnvironmentVariable("TEST_API_URL") ?? "https://localhost:7135";
+            _serviceUrl = $"{baseUrl}/CardValidation/card/credit/validate";
         }
 
         [Given(@"I have a credit card with the following details:")]

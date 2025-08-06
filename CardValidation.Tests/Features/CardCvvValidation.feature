@@ -4,7 +4,7 @@ Feature: Card CVV Validation
   So that only valid CVV codes are accepted
 
   Background:
-    Given the card validation service is available at "https://cardvalidation.api:7135/CardValidation/card/credit/validate"
+    Given the card validation service is available at credit card validation url
 
   Scenario Outline: Valid CVV codes should be accepted
     Given I have a credit card with the following details:

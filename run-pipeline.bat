@@ -25,7 +25,7 @@ if errorlevel 1 (
 
 if "%command%"=="help" goto :show_help
 if "%command%"=="build" goto :build
-if "%command%"=="test" goto :test_full
+if "%command%"=="test-pipeline" goto :test_full_pipeline
 if "%command%"=="test-unit" goto :test_unit
 if "%command%"=="test-integration" goto :test_integration
 if "%command%"=="coverage" goto :coverage
@@ -100,7 +100,7 @@ goto :eof
 :test_unit
 echo [INFO] Running unit tests...
 call :create_directories
-docker-compose run --rm test-runner bash -c "dotnet test CardValidation.Tests --configuration Release --filter 'CardValidationServiceTests' --logger 'trx;LogFileName=unit-tests.trx' --results-directory ./test-results/unit-tests --collect:'XPlat Code Coverage' --settings coverlet.runsettings"
+dotnet test CardValidation.Tests --configuration Release --filter "CardValidationServiceTests" --logger "trx;LogFileName=unit-tests.trx" --results-directory ./coverage --collect:"XPlat Code Coverage"
 echo [OK] Unit tests completed
 goto :eof
 
@@ -111,18 +111,18 @@ echo [INFO] Starting API...
 docker-compose up -d cardvalidation-api
 timeout /t 10 /nobreak >nul
 echo [INFO] Running integration tests...
-docker-compose run --rm test-runner bash -c "dotnet test CardValidation.Tests --configuration Release --filter 'CardValidation.Tests.Features' --logger 'trx;LogFileName=integration-tests.trx' --results-directory ./test-results/integration-tests --collect:'XPlat Code Coverage' --settings coverlet.runsettings"
-docker-compose down
+dotnet test CardValidation.Tests --configuration Release --filter "CardValidation.Tests.Features" --logger "trx;LogFileName=integration-tests.trx" --results-directory ./test-results/integration-tests
+
 echo [OK] Integration tests completed
 goto :eof
 
 :coverage
 echo [INFO] Generating coverage report...
-docker-compose run --rm test-runner bash -c "reportgenerator -reports:'./coverage/**/coverage.cobertura.xml' -targetdir:'./coverage/html-report' -reporttypes:Html -verbosity:Info"
+reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir:"./coverage/html-report" -reporttypes:Html -verbosity:Info
 echo [OK] Coverage report created
 goto :eof
 
-:test_full
+:test_full_pipeline
 echo === Running full testing pipeline ===
 call :clean
 call :build

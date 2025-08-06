@@ -76,8 +76,7 @@ namespace CardValidation.Tests.Features
         
         public virtual async System.Threading.Tasks.Task FeatureBackgroundAsync()
         {
-            await testRunner.GivenAsync("the card validation service is available at \"https://cardvalidation.api:7135/Card" +
-                    "Validation/card/credit/validate\"", ((string)(null)), ((Reqnroll.Table)(null)), "Given ");
+            await testRunner.GivenAsync("the card validation service is available at credit card validation url", ((string)(null)), ((Reqnroll.Table)(null)), "Given ");
         }
         
         async System.Threading.Tasks.Task Xunit.IAsyncLifetime.InitializeAsync()

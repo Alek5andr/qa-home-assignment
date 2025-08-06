@@ -25,9 +25,31 @@ RUN mkdir -p /app/test-results/unit-tests && \
 # Собираем проект
 RUN dotnet build --configuration Release --no-restore
 
-# Создаём скрипт для запуска тестов
+# Создаём скрипт для запуска тестов с установкой сертификата
 RUN echo '#!/bin/bash\n\
 set -e\n\
+\n\
+# Проверяем и устанавливаем сертификат из общего volume\n\
+echo "=== Настройка сертификата ==="\n\
+if [ -f "/shared-volume/aspnetapp.pfx" ] && [ -f "/shared-volume/aspnetapp.crt" ]; then\n\
+    echo "Найден сертификат от API, устанавливаем доверие..."\n\
+    # Добавляем сертификат в доверенные\n\
+    cp /shared-volume/aspnetapp.crt /usr/local/share/ca-certificates/cardvalidation-api.crt\n\
+    update-ca-certificates\n\
+    \n\
+    # Устанавливаем сертификат для .NET\n\
+    dotnet dev-certs https --clean\n\
+    dotnet dev-certs https -ep /shared-volume/aspnetapp.pfx -p password --trust\n\
+    echo "Сертификат установлен успешно!"\n\
+else\n\
+    echo "Сертификат от API не найден, создаём собственный..."\n\
+    dotnet dev-certs https --clean\n\
+    dotnet dev-certs https --trust\n\
+fi\n\
+\n\
+# Настройка переменных окружения для принятия самоподписанных сертификатов\n\
+export DOTNET_SYSTEM_NET_HTTP_SOCKETSHTTPHANDLER_HTTP2UNENCRYPTEDSUPPORT=true\n\
+export DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=false\n\
 \n\
 echo "=== Запуск Unit тестов ==="\n\
 dotnet test CardValidation.Tests \\\n\
@@ -43,11 +65,9 @@ echo "=== Запуск интеграционных BDD тестов ==="\n\
 dotnet test CardValidation.Tests \\\n\
     --configuration Release \\\n\
     --no-build \\\n\
-#    --filter "CardValidation.Tests.Features" \\\n\
+    --filter "CardValidation.Tests.Features" \\\n\
     --logger "trx;LogFileName=integration-tests.trx" \\\n\
-    --results-directory ./test-results/integration-tests \\\n\
-    --collect:"XPlat Code Coverage" \\\n\
-    --settings coverlet.runsettings || echo "Интеграционные тесты завершены с ошибками"\n\
+    --results-directory ./test-results/integration-tests || echo "Интеграционные тесты завершены с ошибками"\n\
 \n\
 echo "=== Объединение результатов покрытия ==="\n\
 # Копируем все файлы покрытия в общую директорию\n\
