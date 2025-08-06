@@ -6,7 +6,7 @@ REM Set UTF-8 encoding
 chcp 65001 >nul 2>&1
 
 set "command=%~1"
-if "%command%"=="" set "command=test"
+if "%command%"=="" set "command=test-pipeline"
 
 REM Check Docker installation
 docker --version >nul 2>&1
