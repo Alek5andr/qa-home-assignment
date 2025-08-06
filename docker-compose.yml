@@ -1,5 +1,4 @@
 services:
-  # Основное приложение для интеграционных тестов
   cardvalidation-api:
     build:
       context: .
@@ -13,23 +12,19 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Password=password
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
     volumes:
-      # Монтируем volume в отдельную директорию для шаринга
       - shared-certs:/shared-volume
     networks:
       - test-network
 
-  # Контейнер для запуска тестов
   test-runner:
     build:
       context: .
       dockerfile: Dockerfile.tests
     container_name: cardvalidation-tests
     volumes:
-      # Монтируем директории для получения результатов тестов
       - ./test-results:/app/test-results
       - ./coverage:/app/coverage
       - ./coverage/html-report:/app/coverage/html-report
-      # Добавляем доступ к сертификату
       - shared-certs:/shared-volume
     networks:
       - test-network
@@ -44,7 +39,6 @@ services:
         /app/run-tests.sh
       "
 
-  # Веб-сервер для просмотра HTML отчётов
   report-viewer:
     image: nginx:alpine
     container_name: coverage-report-viewer
@@ -64,5 +58,4 @@ networks:
 volumes:
   test-results:
   coverage-reports:
-  # Добавляем volume для общего сертификата
   shared-certs:

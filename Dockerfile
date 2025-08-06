@@ -1,4 +1,4 @@
-# Dockerfile для основного приложения
+# Dockerfile for the main application
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 7135
@@ -6,24 +6,24 @@ EXPOSE 7135
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Копируем файлы проекта
+# Copy project files
 COPY ["CardValidation.Web/CardValidation.Web.csproj", "CardValidation.Web/"]
 COPY ["CardValidation.Core/CardValidation.Core.csproj", "CardValidation.Core/"]
 
-# Восстанавливаем зависимости
+# Restore dependencies
 RUN dotnet restore "CardValidation.Web/CardValidation.Web.csproj"
 
-# Копируем весь исходный код
+# Copy all source code
 COPY . .
 
-# Собираем приложение
+# Build the application
 WORKDIR "/src/CardValidation.Web"
 RUN dotnet build "CardValidation.Web.csproj" -c Release -o /app/build
 
-# Устанавливаем OpenSSL для создания сертификатов
+# Install OpenSSL for certificate creation
 RUN apt-get update && apt-get install -y openssl
 
-# Генерируем HTTPS сертификат с правильными SAN (Subject Alternative Names)
+# Generate HTTPS certificate with correct SAN (Subject Alternative Names)
 RUN mkdir /https && \
     echo "[req]" > /https/openssl.cnf && \
     echo "distinguished_name=req" >> /https/openssl.cnf && \
@@ -54,11 +54,11 @@ COPY --from=publish /app/publish .
 COPY --from=build /https/aspnetapp.pfx /https/aspnetapp.pfx
 COPY --from=build /https/aspnetapp.crt /https/aspnetapp.crt
 
-# Устанавливаем переменные окружения для HTTPS
+# Set environment variables for HTTPS
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=password
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
 
-# Создаём startup скрипт для копирования сертификата в общий volume
+# Create a startup script to copy the certificate to the shared volume
 RUN echo '#!/bin/bash\n\
 echo "Копируем встроенный сертификат в общий volume..."\n\
 # Копируем сертификат из встроенной директории в volume\n\

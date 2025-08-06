@@ -84,10 +84,8 @@ namespace CardValidation.Tests.Steps
             
             Console.WriteLine($"Response content: {_responseContent}");
             
-            // Пробуем разные варианты десериализации
             try
             {
-                // Вариант 1: Прямое строковое значение
                 if (_responseContent.Trim().StartsWith("\"") && _responseContent.Trim().EndsWith("\""))
                 {
                     var paymentSystemType = JsonSerializer.Deserialize<string>(_responseContent);
@@ -95,7 +93,6 @@ namespace CardValidation.Tests.Steps
                     return;
                 }
                 
-                // Вариант 2: Объект с полем PaymentSystemType
                 var responseAsObject = JsonSerializer.Deserialize<PaymentSystemResponse>(_responseContent, 
                     new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
                 
@@ -105,13 +102,11 @@ namespace CardValidation.Tests.Steps
                     return;
                 }
                 
-                // Вариант 3: Объект с другим именем поля
                 var responseAsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(_responseContent,
                     new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
                 
                 if (responseAsDict != null)
                 {
-                    // Ищем поле с типом платежной системы
                     var paymentSystemField = responseAsDict.FirstOrDefault(kvp => 
                         kvp.Key.ToLowerInvariant().Contains("payment") || 
                         kvp.Key.ToLowerInvariant().Contains("type") ||
@@ -124,7 +119,6 @@ namespace CardValidation.Tests.Steps
                     }
                 }
                 
-                // Вариант 4: Просто содержит ожидаемое значение
                 _responseContent.Should().Contain(expectedPaymentSystem);
             }
             catch (JsonException ex)
@@ -143,7 +137,6 @@ namespace CardValidation.Tests.Steps
             
             try
             {
-                // Пробуем десериализовать как простой словарь ошибок
                 var simpleErrorResponse = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(_responseContent);
                 
                 if (simpleErrorResponse != null)
@@ -159,7 +152,6 @@ namespace CardValidation.Tests.Steps
                     }
                 }
                 
-                // Пробуем десериализовать как стандартный ответ валидации ASP.NET Core
                 var errorResponse = JsonSerializer.Deserialize<ValidationErrorResponse>(_responseContent,
                     new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
                 
@@ -178,7 +170,6 @@ namespace CardValidation.Tests.Steps
                 Console.WriteLine($"JSON deserialization failed: {ex.Message}");
             }
             
-            // Если десериализация не удалась, проверяем содержимое напрямую
             _responseContent.Should().Contain(expectedErrorMessage, 
                 $"Expected error message '{expectedErrorMessage}' was not found in response content: {_responseContent}");
         }

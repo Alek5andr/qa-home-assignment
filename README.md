@@ -33,288 +33,104 @@ API should return all validation errors in case of failure.
 2. Clone the repository on your local machine 
 3. Compile and Run application Visual Studio 2022.
 
-# Настройка окружения тестирования для Windows 10
+# Setting up a Windows 10 testing environment
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-Выберите один из трёх вариантов запуска:
-
-### Вариант 1: PowerShell скрипт (Рекомендуется)
-```powershell
-# Запуск всех тестов
-.\run-pipeline.ps1
-
-# Запуск конкретной команды
-.\run-pipeline.ps1 build
-.\run-pipeline.ps1 test-unit
-.\run-pipeline.ps1 view-report
-```
-
-### Вариант 2: Batch файл (CMD)
+### Batch file (CMD)
 ```cmd
-:: Запуск всех тестов
+:: Run all tests
 run-pipeline.bat
 
-:: Запуск конкретной команды
+:: Run a specific command
 run-pipeline.bat build
 run-pipeline.bat test-unit
 run-pipeline.bat view-report
 ```
 
-### Вариант 3: Make (требует установки)
-```powershell
-# Установка через Chocolatey
-choco install make
+## 📋 Prerequisites
 
-# Использование
-make test
-make test-unit
-make view-report
+### 1. Docker Desktop for Windows
+**Required!** Install Docker Desktop:
+- Download from: https://www.docker.com/products/docker-desktop
+- Make sure Docker and docker-compose are running:
+```cmd
+docker --version
+docker-compose --version
 ```
 
-## 📋 Предварительные требования
+## 📂 File structure
 
-### 1. Docker Desktop для Windows
-**Обязательно!** Установите Docker Desktop:
-- Скачайте с: https://www.docker.com/products/docker-desktop
-- Убедитесь, что Docker и docker-compose работают:
-  ```powershell
-  docker --version
-  docker-compose --version
-  ```
-
-### 2. PowerShell (рекомендуется)
-Windows 10 имеет встроенный PowerShell, но рекомендуется PowerShell 7:
-- Скачайте с: https://github.com/PowerShell/PowerShell/releases
-- Или установите через winget:
-  ```cmd
-  winget install Microsoft.PowerShell
-  ```
-
-## 🛠 Установка Make для Windows (опционально)
-
-Если хотите использовать Makefile, установите Make одним из способов:
-
-### Способ 1: Chocolatey (рекомендуется)
-```powershell
-# Установка Chocolatey (если не установлен)
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-
-# Установка Make
-choco install make
+After setup, you should have the following files:
+```
+├── run-pipeline.bat # Batch script
+├── Dockerfile # Main application
+├── Dockerfile.tests # Test container
+├── docker-compose.yml # Docker configuration
+└── coverlet.runsettings # Coverage settings
 ```
 
-### Способ 2: Scoop
-```powershell
-# Установка Scoop (если не установлен)
-iwr -useb get.scoop.sh | iex
-
-# Установка Make
-scoop install make
-```
-
-### Способ 3: Git for Windows
-Если у вас установлен Git for Windows, Make может быть уже доступен:
-```powershell
-# Проверьте наличие
-where make
-```
-
-### Способ 4: Visual Studio Build Tools
-Make входит в состав Visual Studio Build Tools или Visual Studio.
-
-## 🔧 Настройка PowerShell
-
-### Разрешение выполнения скриптов
-```powershell
-# Временно для текущей сессии
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
-
-# Или постоянно для текущего пользователя
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-### Проверка кодировки
-Убедитесь, что PowerShell использует UTF-8:
-```powershell
-# Проверка текущей кодировки
-[Console]::OutputEncoding
-
-# Установка UTF-8 (если нужно)
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-```
-
-## 📂 Структура файлов
-
-После настройки у вас должны быть файлы:
-```
-├── run-pipeline.ps1      # PowerShell скрипт (основной)
-├── run-pipeline.bat      # Batch скрипт (альтернатива)
-├── Makefile.windows      # Makefile для Windows
-├── Dockerfile            # Основное приложение
-├── Dockerfile.tests      # Контейнер тестов
-├── docker-compose.yml    # Конфигурация Docker
-└── coverlet.runsettings  # Настройки покрытия
-```
-
-## 🚀 Способы запуска
-
-### PowerShell (рекомендуется)
-```powershell
-# Справка
-.\run-pipeline.ps1 help
-
-# Полный pipeline
-.\run-pipeline.ps1 test
-
-# Отдельные команды
-.\run-pipeline.ps1 build
-.\run-pipeline.ps1 test-unit
-.\run-pipeline.ps1 test-integration
-.\run-pipeline.ps1 coverage
-.\run-pipeline.ps1 view-report
-```
+## 🚀 Run methods
 
 ### CMD/Batch
 ```cmd
-rem Справка
+rem Help
 run-pipeline.bat help
 
-rem Полный pipeline
+rem Full pipeline
 run-pipeline.bat test
 
-rem Отдельные команды
+rem Individual commands
 run-pipeline.bat build
 run-pipeline.bat test-unit
 run-pipeline.bat test-integration
 run-pipeline.bat view-report
 ```
 
-### Make (если установлен)
-```powershell
-# Переименуйте Makefile.windows в Makefile
-mv Makefile.windows Makefile
+## 📊 View results
 
-# Использование
-make help
-make test
-make test-unit
-make view-report
-```
+After running tests:
 
-## 📊 Просмотр результатов
+1. **HTML report**: Will open automatically http://localhost:8080
+2. **Local files**:
+- Test results: `.\test-results\`
+- HTML report: `.\coverage\html-report\index.html`
 
-После выполнения тестов:
+## 💡 Useful commands
 
-1. **HTML отчёт**: Автоматически откроется http://localhost:8080
-2. **Локальные файлы**:
-   - Результаты тестов: `.\test-results\`
-   - HTML отчёт: `.\coverage\html-report\index.html`
-
-## 🚨 Устранение проблем
-
-### Docker не запускается
-```powershell
-# Проверьте статус Docker Desktop
-Get-Process "*docker*"
-
-# Перезапустите Docker Desktop
-Stop-Service *docker*
-Start-Service *docker*
-```
-
-### PowerShell не выполняет скрипты
-```powershell
-# Проверьте политику выполнения
-Get-ExecutionPolicy
-
-# Разрешите выполнение скриптов
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-### Ошибки кодировки (кракозябры)
-```powershell
-# Установите UTF-8 в консоли
-chcp 65001
-
-# Или в PowerShell
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-```
-
-### Make не найден
-```powershell
-# Проверьте установку
-where make
-
-# Если не найден, используйте PowerShell скрипт вместо Make
-.\run-pipeline.ps1 test
-```
-
-### Порт 8080 занят
-```powershell
-# Найдите процесс, использующий порт
-netstat -ano | findstr :8080
-
-# Остановите контейнеры
-docker-compose --profile report-viewer down
-```
-
-## 💡 Полезные команды
-
-### Управление Docker
-```powershell
-# Статус контейнеров
+### Docker management
+```cmd
+# Container status
 docker-compose ps
 
-# Логи
+# Logs
 docker-compose logs test-runner
 
-# Очистка
+# Cleanup
 docker-compose down --remove-orphans --volumes
 docker system prune -f
 ```
 
-### Отладка
-```powershell
-# Проверка файлов результатов
-Get-ChildItem .\test-results\ -Recurse
-Get-ChildItem .\coverage\ -Recurse
-
-# Проверка Docker образов
+### Debugging
+```cmd
+# Checking Docker images
 docker images | Select-String cardvalidation
 ```
 
-## ⚙️ Кастомизация
+## ⚙️ Customization
 
-### Изменение портов
-В `docker-compose.yml`:
+### Changing ports
+In `docker-compose.yml`:
 ```yaml
 services:
-  report-viewer:
-    ports:
-      - "8081:80"  # Изменить порт веб-сервера
+report-viewer:
+ports:
+- "8081:80" # Change web server port
 ```
 
-### Настройка покрытия кода
-В `coverlet.runsettings`:
+### Setting code coverage
+In `coverlet.runsettings`:
 ```xml
 <Exclude>[*.Tests]*,[*]*.Program</Exclude>
 <Include>[CardValidation.Core]*</Include>
-```
-
-## 🤝 Рекомендации
-
-1. **Используйте PowerShell скрипт** - он наиболее универсален
-2. **Установите Docker Desktop** - обязательное требование
-3. **Разрешите выполнение скриптов** в PowerShell
-4. **Проверьте кодировку** если видите кракозябры
-5. **Используйте Windows Terminal** для лучшего опыта
-
----
-
-**Быстрая проверка готовности системы:**
-```powershell
-# Запустите эту команду для проверки всех компонентов
-docker --version; docker-compose --version; pwsh --version
-if ($?) { Write-Host "✓ Система готова к работе" -ForegroundColor Green } else { Write-Host "✗ Требуется дополнительная настройка" -ForegroundColor Red }
 ```

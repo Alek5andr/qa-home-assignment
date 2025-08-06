@@ -1,57 +1,57 @@
-# Используем официальный образ .NET SDK
+# Use official .NET SDK image
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS test-environment
 
-# Устанавливаем рабочую директорию
+# Set working directory
 WORKDIR /app
 
-# Копируем файлы проекта
+# Copy project files
 COPY . .
 
-# Восстанавливаем зависимости
+# Restore dependencies
 RUN dotnet restore
 
-# Устанавливаем глобальный инструмент для генерации отчётов
+# Install global tool for report generation
 RUN dotnet tool install --global dotnet-reportgenerator-globaltool
 
-# Добавляем путь к глобальным инструментам в PATH
+# Add global tools path to PATH
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
-# Создаём директории для результатов тестов и отчётов
+# Create directories for test results and reports
 RUN mkdir -p /app/test-results/unit-tests && \
     mkdir -p /app/test-results/integration-tests && \
     mkdir -p /app/coverage && \
     mkdir -p /app/coverage/html-report
 
-# Собираем проект
+# Build the project
 RUN dotnet build --configuration Release --no-restore
 
-# Создаём скрипт для запуска тестов с установкой сертификата
+# Create script to run tests and install certificate
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
-# Проверяем и устанавливаем сертификат из общего volume\n\
-echo "=== Настройка сертификата ==="\n\
+# Check and install certificate from shared volume\n\
+echo "=== Install certificate ==="\n\
 if [ -f "/shared-volume/aspnetapp.pfx" ] && [ -f "/shared-volume/aspnetapp.crt" ]; then\n\
-    echo "Найден сертификат от API, устанавливаем доверие..."\n\
-    # Добавляем сертификат в доверенные\n\
+    echo "API certificate found, installing trust..."\n\
+    # Add certificate to trusted store\n\
     cp /shared-volume/aspnetapp.crt /usr/local/share/ca-certificates/cardvalidation-api.crt\n\
     update-ca-certificates\n\
     \n\
-    # Устанавливаем сертификат для .NET\n\
+    # Install certificate for .NET\n\
     dotnet dev-certs https --clean\n\
     dotnet dev-certs https -ep /shared-volume/aspnetapp.pfx -p password --trust\n\
-    echo "Сертификат установлен успешно!"\n\
+    echo "Certificate installed successfully!"\n\
 else\n\
-    echo "Сертификат от API не найден, создаём собственный..."\n\
+    echo "API certificate not found, creating own..."\n\
     dotnet dev-certs https --clean\n\
     dotnet dev-certs https --trust\n\
 fi\n\
 \n\
-# Настройка переменных окружения для принятия самоподписанных сертификатов\n\
+# Set environment variables to allow self-signed certificates\n\
 export DOTNET_SYSTEM_NET_HTTP_SOCKETSHTTPHANDLER_HTTP2UNENCRYPTEDSUPPORT=true\n\
 export DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=false\n\
 \n\
-echo "=== Запуск Unit тестов ==="\n\
+echo "=== Run Unit tests ==="\n\
 dotnet test CardValidation.Tests \\\n\
     --configuration Release \\\n\
     --no-build \\\n\
@@ -59,42 +59,42 @@ dotnet test CardValidation.Tests \\\n\
     --logger "trx;LogFileName=unit-tests.trx" \\\n\
     --results-directory ./test-results/unit-tests \\\n\
     --collect:"XPlat Code Coverage" \\\n\
-    --settings coverlet.runsettings || echo "Unit тесты завершены с ошибками"\n\
+    --settings coverlet.runsettings || echo "Unit tests completed with an error"\n\
 \n\
-echo "=== Запуск интеграционных BDD тестов ==="\n\
+echo "=== Run integration BDD tests ==="\n\
 dotnet test CardValidation.Tests \\\n\
     --configuration Release \\\n\
     --no-build \\\n\
     --filter "CardValidation.Tests.Features" \\\n\
     --logger "trx;LogFileName=integration-tests.trx" \\\n\
-    --results-directory ./test-results/integration-tests || echo "Интеграционные тесты завершены с ошибками"\n\
+    --results-directory ./test-results/integration-tests || echo "Integration tests completed with an error"\n\
 \n\
-echo "=== Объединение результатов покрытия ==="\n\
-# Копируем все файлы покрытия в общую директорию\n\
+echo "=== Merge coverage results ==="\n\
+# Copy all coverage files into common directory\n\
 find ./test-results -name "coverage.cobertura.xml" -exec cp {} ./coverage/ \\;\n\
 \n\
-echo "=== Генерация HTML отчёта ==="\n\
+echo "=== Generate HTML report ==="\n\
 reportgenerator \\\n\
     -reports:"./coverage/**/coverage.cobertura.xml" \\\n\
     -targetdir:"./coverage/html-report" \\\n\
     -reporttypes:Html \\\n\
-    -verbosity:Info || echo "Генерация отчёта завершена с предупреждениями"\n\
+    -verbosity:Info || echo "Report generation completed with a warning"\n\
 \n\
-echo "=== Результаты тестирования ==="\n\
-echo "Unit тесты: ./test-results/unit-tests/"\n\
-echo "Интеграционные тесты: ./test-results/integration-tests/"\n\
-echo "HTML отчёт о покрытии: ./coverage/html-report/index.html"\n\
+echo "=== Test results ==="\n\
+echo "Unit tests: ./test-results/unit-tests/"\n\
+echo "Integration tests: ./test-results/integration-tests/"\n\
+echo "Coverage HTML report: ./coverage/html-report/index.html"\n\
 \n\
-# Показываем краткую статистику\n\
+# Show brief statistics\n\
 if [ -f "./coverage/html-report/index.html" ]; then\n\
-    echo "HTML отчёт успешно создан"\n\
+    echo "HTML report created successfully"\n\
     ls -la ./coverage/html-report/\n\
 else\n\
-    echo "Ошибка при создании HTML отчёта"\n\
+    echo "Error creating HTML report"\n\
 fi\n\
 ' > /app/run-tests.sh && chmod +x /app/run-tests.sh
 
-# Создаём файл настроек покрытия кода
+# Create code coverage settings file
 RUN echo '<?xml version="1.0" encoding="utf-8"?>\n\
 <RunSettings>\n\
   <DataCollectionRunSettings>\n\
@@ -112,8 +112,8 @@ RUN echo '<?xml version="1.0" encoding="utf-8"?>\n\
   </DataCollectionRunSettings>\n\
 </RunSettings>' > /app/coverlet.runsettings
 
-# Экспортируем порты (если нужны для интеграционных тестов)
+# Export ports (if needed for integration tests)
 EXPOSE 7135
 
-# Устанавливаем команду по умолчанию
+# Set default command
 CMD ["/app/run-tests.sh"]

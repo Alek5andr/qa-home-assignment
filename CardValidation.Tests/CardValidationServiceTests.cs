@@ -16,78 +16,48 @@ public class CardValidationServiceTests
     [Fact]
     public void ValidateNumber_ValidVisaCard_ReturnsTrue()
     {
-        // Arrange
         var visaCardNumber = "4111111111111111";
-
-        // Act
         var result = _service.ValidateNumber(visaCardNumber);
-
-        // Assert
         Assert.True(result);
     }
 
     [Fact]
     public void ValidateNumber_ValidVisaCardWith13Digits_ReturnsTrue()
     {
-        // Arrange
         var visaCardNumber = "4111111111111";
-
-        // Act
         var result = _service.ValidateNumber(visaCardNumber);
-
-        // Assert
         Assert.True(result);
     }
 
     [Fact]
     public void ValidateNumber_ValidMasterCard_ReturnsTrue()
     {
-        // Arrange
         var masterCardNumber = "5555555555554444";
-
-        // Act
         var result = _service.ValidateNumber(masterCardNumber);
-
-        // Assert
         Assert.True(result);
     }
 
     [Fact]
     public void ValidateNumber_ValidMasterCardStartingWith2_ReturnsTrue()
     {
-        // Arrange
         var masterCardNumber = "2221001234567890";
-
-        // Act
         var result = _service.ValidateNumber(masterCardNumber);
-
-        // Assert
         Assert.True(result);
     }
 
     [Fact]
     public void ValidateNumber_ValidAmericanExpress_ReturnsTrue()
     {
-        // Arrange
         var amexCardNumber = "378282246310005";
-
-        // Act
         var result = _service.ValidateNumber(amexCardNumber);
-
-        // Assert
         Assert.True(result);
     }
 
     [Fact]
     public void ValidateNumber_ValidAmericanExpressStartingWith34_ReturnsTrue()
     {
-        // Arrange
         var amexCardNumber = "341111111111111";
-
-        // Act
         var result = _service.ValidateNumber(amexCardNumber);
-
-        // Assert
         Assert.True(result);
     }
 
@@ -105,49 +75,31 @@ public class CardValidationServiceTests
     [InlineData("1111111111111111")]
     public void ValidateNumber_InvalidCardNumbers_ReturnsFalse(string cardNumber)
     {
-        // Act
         var result = _service.ValidateNumber(cardNumber);
-
-        // Assert
         Assert.False(result);
     }
 
     [Fact]
     public void GetPaymentSystemType_ValidVisaCard_ReturnsVisa()
     {
-        // Arrange
         var visaCardNumber = "4111111111111111";
-
-        // Act
         var result = _service.GetPaymentSystemType(visaCardNumber);
-
-        // Assert
         Assert.Equal(PaymentSystemType.Visa, result);
     }
 
     [Fact]
     public void GetPaymentSystemType_ValidMasterCard_ReturnsMasterCard()
     {
-        // Arrange
         var masterCardNumber = "5555555555554444";
-
-        // Act
         var result = _service.GetPaymentSystemType(masterCardNumber);
-
-        // Assert
         Assert.Equal(PaymentSystemType.MasterCard, result);
     }
 
     [Fact]
     public void GetPaymentSystemType_ValidAmericanExpress_ReturnsAmericanExpress()
     {
-        // Arrange
         var amexCardNumber = "378282246310005";
-
-        // Act
         var result = _service.GetPaymentSystemType(amexCardNumber);
-
-        // Assert
         Assert.Equal(PaymentSystemType.AmericanExpress, result);
     }
 
@@ -157,7 +109,6 @@ public class CardValidationServiceTests
     [InlineData("invalid")]
     public void GetPaymentSystemType_InvalidCardNumber_ThrowsNotImplementedException(string cardNumber)
     {
-        // Act & Assert
         Assert.Throws<NotImplementedException>(() => _service.GetPaymentSystemType(cardNumber));
     }
 
@@ -168,10 +119,7 @@ public class CardValidationServiceTests
     [InlineData("A B C")]
     public void ValidateOwner_ValidNames_ReturnsTrue(string owner)
     {
-        // Act
         var result = _service.ValidateOwner(owner);
-
-        // Assert
         Assert.True(result);
     }
 
@@ -186,10 +134,7 @@ public class CardValidationServiceTests
     [InlineData("John-Doe")]
     public void ValidateOwner_InvalidNames_ReturnsFalse(string owner)
     {
-        // Act
         var result = _service.ValidateOwner(owner);
-
-        // Assert
         Assert.False(result);
     }
 
@@ -200,10 +145,7 @@ public class CardValidationServiceTests
     [InlineData("01/30")]
     public void ValidateIssueDate_ValidFutureDates_ReturnsTrue(string issueDate)
     {
-        // Act
         var result = _service.ValidateIssueDate(issueDate);
-
-        // Assert
         Assert.True(result);
     }
 
@@ -221,10 +163,7 @@ public class CardValidationServiceTests
     [InlineData("12 2025")]
     public void ValidateIssueDate_InvalidDates_ReturnsFalse(string issueDate)
     {
-        // Act
         var result = _service.ValidateIssueDate(issueDate);
-
-        // Assert
         Assert.False(result);
     }
 
@@ -233,10 +172,7 @@ public class CardValidationServiceTests
     [InlineData("1234")]
     public void ValidateCvc_ValidCvc_ReturnsTrue(string cvc)
     {
-        // Act
         var result = _service.ValidateCvc(cvc);
-
-        // Assert
         Assert.True(result);
     }
 
@@ -248,10 +184,7 @@ public class CardValidationServiceTests
     [InlineData("invalid")]
     public void ValidateCvc_InvalidCvc_ReturnsFalse(string cvc)
     {
-        // Act
         var result = _service.ValidateCvc(cvc);
-
-        // Assert
         Assert.False(result);
     }
 } 
