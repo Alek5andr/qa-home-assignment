@@ -60,18 +60,18 @@ ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
 
 # Create a startup script to copy the certificate to the shared volume
 RUN echo '#!/bin/bash\n\
-echo "Копируем встроенный сертификат в общий volume..."\n\
-# Копируем сертификат из встроенной директории в volume\n\
+echo "Copying embedded certificate to shared volume..."\n\
+# Copying certificate from embedded directory to volume\n\
 if [ -f "/https/aspnetapp.pfx" ]; then\n\
-    echo "Найден встроенный сертификат, копируем в volume..."\n\
+    echo "Embedded certificate found, copying to volume..."\n\
     cp /https/aspnetapp.pfx /shared-volume/aspnetapp.pfx\n\
     cp /https/aspnetapp.crt /shared-volume/aspnetapp.crt\n\
-    echo "Сертификат скопирован в общий volume!"\n\
+    echo "Certificate copied to shared volume!"\n\
     ls -la /shared-volume/\n\
 else\n\
-    echo "ОШИБКА: Встроенный сертификат не найден!"\n\
+    echo "ERROR: Embedded certificate not found!"\n\
 fi\n\
-echo "Запуск приложения..."\n\
+echo "Starting application..."\n\
 exec dotnet CardValidation.Web.dll\n\
 ' > /app/start.sh && chmod +x /app/start.sh
 

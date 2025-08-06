@@ -26,6 +26,8 @@ services:
       - ./coverage:/app/coverage
       - ./coverage/html-report:/app/coverage/html-report
       - shared-certs:/shared-volume
+    depends_on:
+      - cardvalidation-api
     networks:
       - test-network
     environment:
